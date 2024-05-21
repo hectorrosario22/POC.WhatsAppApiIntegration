@@ -1,0 +1,37 @@
+﻿@page "/whatsapp"
+@using System.Text.Json.Serialization
+@using System.Text.Json
+@using System.Text
+@using POC.WhatsAppApiIntegration.Models
+@using POC.WhatsAppApiIntegration.Services
+
+@inject IWhatsAppService whatsappService
+@rendermode InteractiveServer
+
+<PageTitle>WhatsApp Integration</PageTitle>
+
+<h1>WhatsApp Integration</h1>
+
+<form>
+    <div class="mb-3">
+        <label for="to" class="form-label">Teléfono</label>
+        <input type="tel" class="form-control" id="to" @bind-value="whatsAppApiRequestBody.To">
+    </div>
+    <div class="mb-3">
+        <label for="template" class="form-label">Plantilla</label>
+        <input type="text" class="form-control" id="template" @bind-value="whatsAppApiRequestBody.Template.Name">
+    </div>
+    <button type="button" class="btn btn-primary" @onclick="SendMessage">Enviar mensaje</button>
+</form>
+
+<pre>@(responseBody)</pre>
+
+@code {
+    private WhatsAppApiRequestBody whatsAppApiRequestBody = new();
+    private string? responseBody;
+
+    private async Task SendMessage()
+    {
+        responseBody = await whatsappService.SendMessage(whatsAppApiRequestBody);
+    }
+}
