@@ -1,30 +1,47 @@
-using POC.WhatsAppApiIntegration.Components;
+using POC.WhatsAppApiIntegration.Models;
 using POC.WhatsAppApiIntegration.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
-app.UseAntiforgery();
+var summaries = new[]
+{
+    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+};
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapPost("/sendmessage", async (SendMessageRequest sendMessageRequest, IWhatsAppService whatsAppService) =>
+{
+    WhatsAppApiRequestBody body = new()
+    {
+        To = sendMessageRequest.To,
+        Template =
+        {
+            Name = sendMessageRequest.Template
+        }
+    };
+    var response = await whatsAppService.SendMessage(body);
+    return response;
+})
+.WithName("SendMessage")
+.WithOpenApi();
 
 app.Run();
+
+record SendMessageRequest(string To, string Template);
